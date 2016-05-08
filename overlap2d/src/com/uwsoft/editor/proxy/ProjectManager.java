@@ -205,28 +205,36 @@ public class ProjectManager extends BaseProxy {
                 ProjectVO vo = json.fromJson(ProjectVO.class, projectContents);
                 goThroughVersionMigrationProtocol(projectPath, vo);
                 currentProjectVO = vo;
-                String prjInfoFilePath = projectPath + "/project.dt";
-                FileHandle projectInfoFile = Gdx.files.internal(prjInfoFilePath);
-                String projectInfoContents = FileUtils.readFileToString(projectInfoFile.file());
-                ProjectInfoVO voInfo = json.fromJson(ProjectInfoVO.class, projectInfoContents);
-                currentProjectInfoVO = voInfo;
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ResolutionManager resolutionManager = facade.retrieveProxy(ResolutionManager.NAME);
-            if (resolution == null) {
-                resolutionManager.currentResolutionName = currentProjectVO.lastOpenResolution.isEmpty() ? "orig" : currentProjectVO.lastOpenResolution;
-            } else {
-                resolutionManager.currentResolutionName = resolution;
-                currentProjectVO.lastOpenResolution = resolutionManager.currentResolutionName;
-                saveCurrentProject();
-
-            }
-            currentProjectPath = projectPath;
-            checkForConsistency(projectPath);
-            loadProjectData(projectPath);
+        } else {
+            currentProjectVO = new ProjectVO();
         }
+
+        try {
+            Json json = new Json();
+            String prjInfoFilePath = projectPath + "/project.dt";
+            FileHandle projectInfoFile = Gdx.files.internal(prjInfoFilePath);
+            String projectInfoContents = FileUtils.readFileToString(projectInfoFile.file());
+            ProjectInfoVO voInfo = json.fromJson(ProjectInfoVO.class, projectInfoContents);
+            currentProjectInfoVO = voInfo;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ResolutionManager resolutionManager = facade.retrieveProxy(ResolutionManager.NAME);
+        if (resolution == null) {
+            resolutionManager.currentResolutionName = currentProjectVO.lastOpenResolution.isEmpty() ? "orig" : currentProjectVO.lastOpenResolution;
+        } else {
+            resolutionManager.currentResolutionName = resolution;
+            currentProjectVO.lastOpenResolution = resolutionManager.currentResolutionName;
+            saveCurrentProject();
+
+        }
+        currentProjectPath = projectPath;
+        checkForConsistency(projectPath);
+        loadProjectData(projectPath);
     }
 
     private void goThroughVersionMigrationProtocol(String projectPath, ProjectVO projectVo) {
